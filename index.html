@@ -391,14 +391,8 @@
                         <div class="metric-title">Valence</div>
                         <div class="metric-value" id="valenceValue">-</div>
                     </div>
-                    <div class="metric-card">
-                        <div class="metric-title">Positivity</div>
-                        <div class="metric-value" id="positivityValue">-</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-title">Wish</div>
-                        <div class="metric-value" id="wishValue">-</div>
-                    </div>
+                    
+                   
                     <div class="metric-card">
                         <div class="metric-title">Faces Detected</div>
                         <div class="metric-value" id="facesValue">-</div>
@@ -472,73 +466,9 @@
                     </div>
                 </div>
                 
-                <div class="feature-section">
-                    <h3 class="feature-title">Face Details</h3>
-                    <div class="feature-content">
-                        <div class="feature-item">
-                            <div class="feature-label">Age</div>
-                            <div class="feature-value" id="ageValue">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">Gender</div>
-                            <div class="feature-value" id="genderValue">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">Pitch</div>
-                            <div class="feature-value" id="pitchValue">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">Roll</div>
-                            <div class="feature-value" id="rollValue">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">Yaw</div>
-                            <div class="feature-value" id="yawValue">-</div>
-                        </div>
-                    </div>
-                </div>
                 
-                <div class="feature-section">
-                    <h3 class="feature-title">Age Probabilities</h3>
-                    <div class="feature-content">
-                        <div class="feature-item">
-                            <div class="feature-label">Under 18</div>
-                            <div class="feature-value" id="ageUnder18">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">18-35</div>
-                            <div class="feature-value" id="age18to35">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">35-51</div>
-                            <div class="feature-value" id="age35to51">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">Over 51</div>
-                            <div class="feature-value" id="ageOver51">-</div>
-                        </div>
-                    </div>
-                </div>
                 
-                <div class="feature-section">
-                    <h3 class="feature-title">Gender Probabilities</h3>
-                    <div class="feature-content">
-                        <div class="feature-item">
-                            <div class="feature-label">Male</div>
-                            <div class="feature-value" id="genderMale">-</div>
-                        </div>
-                        <div class="feature-item">
-                            <div class="feature-label">Female</div>
-                            <div class="feature-value" id="genderFemale">-</div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="feature-section">
-                    <h3 class="feature-title">Selected Facial Features</h3>
-                    <div class="feature-content" id="facialFeatures">
-                        <!-- Will be populated dynamically -->
-                    </div>
+               
                 </div>
             </div>
         </div>
@@ -642,7 +572,7 @@
                 
                 // Auto-hide after 5 seconds only if autoHide is true
                 if (autoHide) {
-                    currentAlert = setTimeout(hideAlert, 5000);
+                    currentAlert = setTimeout(hideAlert, 1000);
                 }
             }
             
@@ -1215,9 +1145,10 @@
                 if (facesCount === 0) {
                     showAlert('Your Face is Not Detected', 'Please position yourself in front of the camera for analysis.');
                     playNoFaceSound();
-                } else if (facesCount >= 1) {
+                } else if (facesCount >= 2) {
+                    showAlert('Too many people detected', 'Please rectify the situation and try again.');
+                    playNoFaceSound();
                     // Hide popup if faces are detected
-                    hideAlert();
                 }
             });
             
