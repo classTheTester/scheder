@@ -341,6 +341,107 @@
             gap: 8px;
         }
         
+        /* Ring Light Styles */
+        .ring-light-overlay {
+            position: absolute;
+            box-sizing: border-box;
+            border-radius: 50%;
+            border: 80px solid rgba(255,255,255,0.85); 
+            background: transparent;
+            box-shadow: 0 0 80px 20px rgba(255,255,255,0.5);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .ring-light-resize-handle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            bottom: -8px;
+            right: -8px;
+            cursor: nwse-resize;
+            z-index: 5;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .ring-light-controls {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+            pointer-events: auto;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .bright-mode .ring-light-controls {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        
+        .color-option.active {
+            border-color: white;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+        
+        .bright-mode .color-option.active {
+            border-color: #333;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+        }
+        
+        .ring-light-toggle {
+            position: absolute;
+            top: 70px;
+            right: 20px;
+            z-index: 10;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: bold;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bright-mode .ring-light-toggle {
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            border: 1px solid rgba(0, 0, 0, 0.2);
+        }
+        
+        .ring-light-toggle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+        
         @media (max-width: 768px) {
             .tile {
                 min-width: 140px;
@@ -354,6 +455,13 @@
             
             .feature-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .ring-light-controls {
+                bottom: 70px;
+                flex-wrap: wrap;
+                justify-content: center;
+                max-width: 250px;
             }
         }
         
@@ -372,6 +480,16 @@
                 padding: 8px 12px;
                 font-size: 0.85rem;
             }
+            
+            .ring-light-controls {
+                bottom: 60px;
+                padding: 8px;
+            }
+            
+            .color-option {
+                width: 25px;
+                height: 25px;
+            }
         }
     </style>
 </head>
@@ -382,6 +500,11 @@
             <div class="camera-placeholder" id="cameraPlaceholder">
                 <i>📷</i>
                 <p>Camera access required</p>
+            </div>
+            
+            <!-- Ring Light Overlay -->
+            <div class="ring-light-overlay" id="ringLight" style="width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;">
+                <div class="ring-light-resize-handle" id="ringLightResize"></div>
             </div>
         </div>
         
@@ -398,7 +521,19 @@
             </button>
         </div>
         
+        <!-- Ring Light Controls -->
+        <div class="ring-light-controls" id="ringLightControls" style="display: none;">
+            <div class="color-option active" data-color="warm" style="background: radial-gradient(circle, #fff8e1 0%, rgba(255, 248, 225, 0) 70%);"></div>
+            <div class="color-option" data-color="neutral" style="background: radial-gradient(circle, #ffffff 0%, rgba(255, 255, 255, 0) 70%);"></div>
+            <div class="color-option" data-color="cool" style="background: radial-gradient(circle, #f0f8ff 0%, rgba(240, 248, 255, 0) 70%);"></div>
+            <div class="color-option" data-color="daylight" style="background: radial-gradient(circle, #e6f7ff 0%, rgba(230, 247, 255, 0) 70%);"></div>
+            <div class="color-option" data-color="soft" style="background: radial-gradient(circle, #fff0f5 0%, rgba(255, 240, 245, 0) 70%);"></div>
+        </div>
+        
         <button id="brightModeBtn" class="bright-mode-btn">Bright Mode</button>
+        <button id="ringLightToggle" class="ring-light-toggle">
+            <i class="fas fa-lightbulb"></i> Ring Light
+        </button>
         
         <div class="status" id="statusMessage">
             <p>Waiting for camera access to begin analysis...</p>
@@ -437,6 +572,11 @@
             const alertButton = document.getElementById('alertButton');
             const brightModeBtn = document.getElementById('brightModeBtn');
             const overlayContainer = document.getElementById('overlayContainer');
+            const ringLightToggle = document.getElementById('ringLightToggle');
+            const ringLight = document.getElementById('ringLight');
+            const ringLightResize = document.getElementById('ringLightResize');
+            const ringLightControls = document.getElementById('ringLightControls');
+            const colorOptions = document.querySelectorAll('.color-option');
             const body = document.body;
             
             let isCameraActive = false;
@@ -446,11 +586,11 @@
             let currentAlert = null;
             let recomputeTimer = null;
             let isBrightMode = false;
-            
-            // Draggable functionality for tiles
-            let draggedElement = null;
-            let offsetX = 0;
-            let offsetY = 0;
+            let isRingLightVisible = false;
+            let isResizing = false;
+            let ringLightDragging = false;
+            let ringLightOffsetX = 0;
+            let ringLightOffsetY = 0;
             
             // Create tiles with initial positions
             const tiles = [
@@ -634,6 +774,154 @@
                 document.removeEventListener('touchmove', onDrag);
                 document.removeEventListener('touchend', stopDrag);
             }
+            
+            // Ring Light functionality
+            ringLightToggle.addEventListener('click', function() {
+                isRingLightVisible = !isRingLightVisible;
+                if (isRingLightVisible) {
+                    ringLight.style.display = 'block';
+                    ringLightControls.style.display = 'flex';
+                    ringLightToggle.innerHTML = '<i class="fas fa-lightbulb"></i> Hide Ring Light';
+                } else {
+                    ringLight.style.display = 'none';
+                    ringLightControls.style.display = 'none';
+                    ringLightToggle.innerHTML = '<i class="fas fa-lightbulb"></i> Ring Light';
+                }
+            });
+            
+            // Make ring light draggable
+            ringLight.addEventListener('mousedown', startRingLightDrag);
+            ringLight.addEventListener('touchstart', startRingLightDrag, { passive: false });
+            
+            function startRingLightDrag(e) {
+                e.preventDefault();
+                ringLightDragging = true;
+                
+                if (e.type === 'mousedown') {
+                    ringLightOffsetX = e.clientX - ringLight.getBoundingClientRect().left;
+                    ringLightOffsetY = e.clientY - ringLight.getBoundingClientRect().top;
+                    document.addEventListener('mousemove', onRingLightDrag);
+                    document.addEventListener('mouseup', stopRingLightDrag);
+                } else if (e.type === 'touchstart') {
+                    const touch = e.touches[0];
+                    ringLightOffsetX = touch.clientX - ringLight.getBoundingClientRect().left;
+                    ringLightOffsetY = touch.clientY - ringLight.getBoundingClientRect().top;
+                    document.addEventListener('touchmove', onRingLightDrag, { passive: false });
+                    document.addEventListener('touchend', stopRingLightDrag);
+                }
+            }
+            
+            function onRingLightDrag(e) {
+                if (!ringLightDragging) return;
+                
+                e.preventDefault();
+                let clientX, clientY;
+                
+                if (e.type === 'mousemove') {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                } else if (e.type === 'touchmove') {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                
+                // Calculate new position
+                const x = clientX - ringLightOffsetX;
+                const y = clientY - ringLightOffsetY;
+                
+                // Apply new position
+                ringLight.style.left = `${x}px`;
+                ringLight.style.top = `${y}px`;
+                ringLight.style.transform = 'none';
+            }
+            
+            function stopRingLightDrag() {
+                ringLightDragging = false;
+                document.removeEventListener('mousemove', onRingLightDrag);
+                document.removeEventListener('mouseup', stopRingLightDrag);
+                document.removeEventListener('touchmove', onRingLightDrag);
+                document.removeEventListener('touchend', stopRingLightDrag);
+            }
+            
+            // Make ring light resizable
+            ringLightResize.addEventListener('mousedown', startResize);
+            ringLightResize.addEventListener('touchstart', startResize, { passive: false });
+            
+            function startResize(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                isResizing = true;
+                
+                document.addEventListener('mousemove', onResize);
+                document.addEventListener('mouseup', stopResize);
+                document.addEventListener('touchmove', onResize, { passive: false });
+                document.addEventListener('touchend', stopResize);
+            }
+            
+            function onResize(e) {
+                if (!isResizing) return;
+                
+                e.preventDefault();
+                let clientX, clientY;
+                
+                if (e.type === 'mousemove') {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                } else if (e.type === 'touchmove') {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                }
+                
+                const rect = ringLight.getBoundingClientRect();
+                const newWidth = Math.max(100, clientX - rect.left);
+                const newHeight = Math.max(100, clientY - rect.top);
+                
+                ringLight.style.width = `${newWidth}px`;
+                ringLight.style.height = `${newHeight}px`;
+            }
+            
+            function stopResize() {
+                isResizing = false;
+                document.removeEventListener('mousemove', onResize);
+                document.removeEventListener('mouseup', stopResize);
+                document.removeEventListener('touchmove', onResize);
+                document.removeEventListener('touchend', stopResize);
+            }
+            
+            // Color options for ring light
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    // Remove active class from all options
+                    colorOptions.forEach(opt => opt.classList.remove('active'));
+                    
+                    // Add active class to clicked option
+                    this.classList.add('active');
+                    
+                    // Update ring light color
+                    // Get the color for the border
+                    let borderColor;
+                    switch (this.dataset.color) {
+                        case 'warm':
+                            borderColor = 'rgba(255, 248, 225, 0.85)';
+                            break;
+                        case 'neutral':
+                            borderColor = 'rgba(255, 255, 255, 0.85)';
+                            break;
+                        case 'cool':
+                            borderColor = 'rgba(240, 248, 255, 0.85)';
+                            break;
+                        case 'daylight':
+                            borderColor = 'rgba(230, 247, 255, 0.85)';
+                            break;
+                        case 'soft':
+                            borderColor = 'rgba(255, 240, 245, 0.85)';
+                            break;
+                        default:
+                            borderColor = 'rgba(255,255,255,0.85)';
+                    }
+                    ringLight.style.border = `80px solid ${borderColor}`;
+                });
+            });
             
             // Bright mode toggle
             brightModeBtn.addEventListener('click', function() {
